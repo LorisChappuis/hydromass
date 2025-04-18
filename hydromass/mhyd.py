@@ -34,7 +34,7 @@ def Run_Mhyd_PyMC3(Mhyd,model,bkglim=None,nmcmc=1000,fit_bkg=False,back=None,
                    samplefile=None,nrc=None,nbetas=6,min_beta=0.6, nmore=5,
                    p0_prior=None, tune=500, dmonly=False, mstar=None, find_map=True,
                    pnt=False, pnt_model='Ettori', rmin=0., rmax=None, p0_type='sb', init='ADVI', target_accept=0.9,
-                   fit_elong=True, use_jax=True, wlonly=False, pnt_prior='sim'):
+                   fit_elong=True, use_jax=True, wlonly=False, pnt_prior='sim', return_likelihood=False):
     """
 
     Set up hydrostatic mass model and optimize with PyMC3. The routine takes a parametric mass model as input and integrates the hydrostatic equilibrium equation to predict the 3D pressure profile:
@@ -616,20 +616,20 @@ def Run_Mhyd_PyMC3(Mhyd,model,bkglim=None,nmcmc=1000,fit_bkg=False,back=None,
 
             if not isjax or not use_jax:
 
-                trace = pm.sample(nmcmc, init=init, initvals=start, tune=tune, target_accept=target_accept)
+                trace = pm.sample(nmcmc, init=init, initvals=start, tune=tune, target_accept=target_accept, idata_kwargs={"log_likelihood": return_likelihood})
             else:
 
-                trace = pmjax.sample_numpyro_nuts(nmcmc, initvals=start, tune=tune, target_accept=target_accept)
+                trace = pmjax.sample_numpyro_nuts(nmcmc, initvals=start, tune=tune, target_accept=target_accept, idata_kwargs={"log_likelihood": return_likelihood})
 
         else:
 
             if not isjax or not use_jax:
 
-                trace = pm.sample(nmcmc, init=init, tune=tune, target_accept=target_accept)
+                trace = pm.sample(nmcmc, init=init, tune=tune, target_accept=target_accept, idata_kwargs={"log_likelihood": return_likelihood})
 
             else:
 
-                trace = pmjax.sample_numpyro_nuts(nmcmc, tune=tune, target_accept=target_accept)
+                trace = pmjax.sample_numpyro_nuts(nmcmc, tune=tune, target_accept=target_accept, idata_kwargs={"log_likelihood": return_likelihood})
 
         if not wlonly:
             Mhyd.ppc_sb = pm.sample_posterior_predictive(trace, var_names=['sb'])
@@ -1087,7 +1087,7 @@ class Mhyd:
             samplefile=None, nrc=None, nbetas=6, min_beta=0.6, nmore=5,
             p0_prior=None, tune=500, dmonly=False, mstar=None, find_map=True, pnt=False,
             rmin=None, rmax=None, p0_type='sb', init='ADVI', target_accept=0.9,
-            pnt_model='Ettori', fit_elong=False, use_jax=True, wlonly=False, pnt_prior='sim'):
+            pnt_model='Ettori', fit_elong=False, use_jax=True, wlonly=False, pnt_prior='sim', return_likelihood=False):
         '''
         Optimize the mass model using the :func:`hydromass.mhyd.Run_Mhyd_PyMC3` function.
 
@@ -1177,7 +1177,8 @@ class Mhyd:
                        fit_elong=fit_elong,
                        use_jax=use_jax,
                        wlonly=wlonly,
-                       pnt_prior=pnt_prior)
+                       pnt_prior=pnt_prior,
+                       return_likelihood=return_likelihood)
 
 
     def run_forward(self, forward=None, bkglim=None, nmcmc=1000, fit_bkg=False, back=None,

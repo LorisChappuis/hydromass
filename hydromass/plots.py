@@ -702,7 +702,7 @@ def P_from_samples(Mhyd, model, nmore=5, return_Y=False, nout=10):
 
     dens_m, press_tot, pth = densout_pout_from_samples(Mhyd, model, rin_m, rout_m)
 
-    print(pth.shape)
+    #print(pth.shape)
 
     pmt, plot, phit = np.percentile(pth, [50., 50. - 68.3 / 2., 50. + 68.3 / 2.], axis=1)
 
